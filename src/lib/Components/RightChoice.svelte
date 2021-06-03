@@ -29,6 +29,8 @@
 
 	button {
 		position: relative;
+		width: 200px;
+		height: 200px;
 		text-transform: capitalize;
 		font-size: 3rem;
 		margin: 0.5rem;
