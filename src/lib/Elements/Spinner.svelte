@@ -1,9 +1,9 @@
 <script lang="typescript">
+  
 
 	import { onMount } from 'svelte/internal';
-    import { NEW_QUESTION_DELAY, POKEMON_ID_RANGE, QUIZ_SET_SIZE } from '$lib/constants';
     import Checkmark from '$lib/Elements/Checkmark.svelte';
-    import Spinner from '$lib/Elements/Spinner.svelte';
+    import { POKEMON_ID_RANGE, QUIZ_SET_SIZE } from '$lib/constants';
 
     let idSet: Array<number> = [];
 	let answer: number;
@@ -47,7 +47,7 @@
 	function handleChoice(id: number) {
 		result = isCorrect(id, answer);
 		if (result) {
-			setTimeout(createNewQuestion, NEW_QUESTION_DELAY);
+			setTimeout(createNewQuestion, 1500);
 		}
 	}
 
@@ -63,20 +63,20 @@
 		}
 	}
 
-    // Make a new set of api calls when idSet changes
+    // Reactive api call when idSet changes
 	let promise: Promise<Array<number>>;
-	$: promise = fetchPokemonSet(idSet);
+	$: promise = apiRequestLoop(idSet);
 
-	let fetchPokemonSet = function (idSet: Array<number>) {
+	let apiRequestLoop = function (idSet: Array<number>) {
 		let promiseArray = [];
 		idSet.forEach((id) => {
-			let promise = fetchPokemonById(id);
+			let promise = fetchPokemon(id);
 			promiseArray.push(promise);
 		});
 		return Promise.all(promiseArray);
 	};
 
-	async function fetchPokemonById(id: number) {
+	async function fetchPokemon(id: number) {
 		let api = 'https://pokeapi.co/api/v2/pokemon/';
 		const res = await self.fetch(api + id);
 		const pokemon = await res.json();
@@ -90,31 +90,7 @@
 	
 </script>
 
-<section class="quiz-container">
-	<h1>Test your knowledge, Pokemon Trainer!</h1>
-	<h1>Which pokemon is named :</h1>
-	{#await promise}
-		<Spinner />
-	{:then pokemonArray}
-		<div class="question-container">
-			<button on:click={() => handleNameClick(pokemonArray[answer].name)}
-				>{pokemonArray[answer].name}</button
-			>
-			<div class="pokemon-container">
-				{#each pokemonArray as pokemon, index}
-					<button id={index} on:click={() => handleChoice(index)}>
-						<img src={pokemon.sprites.front_default} />
-					</button>
-				{/each}
-			</div>
-			{#if result}
-				<Checkmark />
-			{/if}
-		</div>
-	{:catch error}
-		<p>Uh oh, something went wrong</p>
-	{/await}
-</section>
+<div class="circle rotate" />
 
 <style>
 	img {
@@ -148,4 +124,40 @@
 		align-items: center;
 	}
 
+	.circle {
+		width: 100px;
+		height: 100px;
+		border-radius: 50%;
+		background: red;
+		position: relative;
+		overflow: hidden;
+	}
+	.circle:after {
+		content: '';
+		background: white;
+		height: 50px;
+		display: block;
+		bottom: 0px;
+		position: absolute;
+
+		width: 100%;
+	}
+
+	.rotate {
+		animation: rotation 2s infinite linear;
+	}
+
+	@keyframes rotation {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(359deg);
+		}
+	}
+
+	/* Checkmark  */
+
+	
 </style>
+
