@@ -1,10 +1,8 @@
 <script lang="typescript">
-
 	import { onMount } from 'svelte/internal';
 	import { NEW_QUESTION_DELAY, POKEMON_ID_RANGE, QUIZ_SET_SIZE } from '$lib/constants';
-    import WrongChoice from '$lib/Components/WrongChoice.svelte'
-    import RightChoice from '$lib/Components/RightChoice.svelte'
-	import Checkmark from '$lib/Elements/Checkmark.svelte';
+	import WrongChoice from '$lib/Components/WrongChoice.svelte';
+	import RightChoice from '$lib/Components/RightChoice.svelte';
 	import Spinner from '$lib/Elements/Spinner.svelte';
 
 	let idSet: Array<number> = [];
@@ -46,13 +44,6 @@
 
 	function isCorrect(id: number, answer: number) {
 		return id === answer ? true : false;
-	}
-
-	function handleChoice(id: number) {
-		result = isCorrect(id, answer);
-		if (result) {
-			setTimeout(createNewQuestion, NEW_QUESTION_DELAY);
-		}
 	}
 
 	function handleNameClick(name: string) {
@@ -108,16 +99,20 @@
 		<Spinner />
 	{:then pokemonArray}
 		<div class="question-container">
-			<button class="name" on:click={() => handleNameClick(pokemonArray[answer].name)}
+			<button on:click={() => handleNameClick(pokemonArray[answer].name)}
 				>{pokemonArray[answer].name}</button
 			>
 			<div class="pokemon-container">
 				{#each pokemonArray as pokemon, index}
-					{#if index === answer}
-                         <RightChoice src={pokemon.sprites.front_default} handleChoice={createNewQuestion} name={pokemon.name}/>
-                    {:else}
-                         <WrongChoice src={pokemon.sprites.front_default} handleChoice={createNewQuestion} />
-                    {/if}
+					{#if isCorrect(index, answer)}
+						<RightChoice
+							src={pokemon.sprites.front_default}
+							handleChoice={createNewQuestion}
+							name={pokemon.name}
+						/>
+					{:else}
+						<WrongChoice src={pokemon.sprites.front_default} handleChoice={createNewQuestion} />
+					{/if}
 				{/each}
 			</div>
 		</div>
@@ -127,21 +122,13 @@
 </section>
 
 <style>
-	img {
-		width: 120px;
-	}
-
 	button {
 		position: relative;
 		text-transform: capitalize;
 		font-size: 3rem;
 		margin: 0.5rem;
-	}
-
-	.name {
 		padding: 0.5rem 1rem;
 	}
-
 	.quiz-container {
 		display: flex;
 		flex-direction: column;
@@ -168,25 +155,14 @@
 		align-items: center;
 	}
 
-	.checkmark {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-	}
-
 	@media (min-width: 400px) {
 		.pokemon-container {
 			flex-direction: row;
 		}
 
 		button {
-			padding: 2rem;
-			margin: 2rem;
-		}
-
-		.name {
 			padding: 1rem 2rem;
+			margin: 2rem;
 		}
 	}
 </style>
