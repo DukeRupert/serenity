@@ -33,7 +33,7 @@
 		animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 	}
 
-	@media (min-width: 400px) {
+	@media (min-width: 800px) {
 		button {
 			padding: 2rem;
 			margin: 2rem;

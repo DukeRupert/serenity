@@ -41,7 +41,7 @@
 		transform: translate(-50%, -50%);
 	}
 
-	@media (min-width: 400px) {
+	@media (min-width: 800px) {
 		button {
 			padding: 2rem;
 			margin: 2rem;

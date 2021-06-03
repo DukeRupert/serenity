@@ -41,7 +41,7 @@
 		align-items: center;
 	}
 
-	@media (min-width: 400px) {
+	@media (min-width: 800px) {
 		.pokemon-container {
 			flex-direction: row;
 		}

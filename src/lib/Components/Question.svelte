@@ -40,7 +40,7 @@
 		padding: 0.5rem 1rem;
 	}
 
-	@media (min-width: 400px) {
+	@media (min-width: 800px) {
 		button {
 			padding: 1rem 2rem;
 			margin: 2rem;
