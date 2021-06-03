@@ -1,14 +1,16 @@
 <script lang="typescript">
 
 	import { onMount } from 'svelte/internal';
-    import { NEW_QUESTION_DELAY, POKEMON_ID_RANGE, QUIZ_SET_SIZE } from '$lib/constants';
-    import Checkmark from '$lib/Elements/Checkmark.svelte';
-    import Spinner from '$lib/Elements/Spinner.svelte';
+	import { NEW_QUESTION_DELAY, POKEMON_ID_RANGE, QUIZ_SET_SIZE } from '$lib/constants';
+    import WrongChoice from '$lib/Components/WrongChoice.svelte'
+    import RightChoice from '$lib/Components/RightChoice.svelte'
+	import Checkmark from '$lib/Elements/Checkmark.svelte';
+	import Spinner from '$lib/Elements/Spinner.svelte';
 
-    let idSet: Array<number> = [];
+	let idSet: Array<number> = [];
 	let answer: number;
 	let result: Boolean;
-    let nameClickCount: number;
+	let nameClickCount: number;
 
 	onMount(() => {
 		createNewQuestion();
@@ -18,7 +20,7 @@
 		idSet = createSet(QUIZ_SET_SIZE);
 		answer = pickAnswer(QUIZ_SET_SIZE);
 		result = false;
-        nameClickCount = 0;
+		nameClickCount = 0;
 	}
 
 	function createSet(size: Number) {
@@ -34,13 +36,13 @@
 		return set;
 	}
 
-	function getRandomId([min, max] : number[]) {
-        return Math.floor(Math.random() * (max - min) + min);
+	function getRandomId([min, max]: number[]) {
+		return Math.floor(Math.random() * (max - min) + min);
 	}
 
-    function pickAnswer(size : number) {
-        return Math.floor(Math.random() * size)
-    }
+	function pickAnswer(size: number) {
+		return Math.floor(Math.random() * size);
+	}
 
 	function isCorrect(id: number, answer: number) {
 		return id === answer ? true : false;
@@ -57,26 +59,23 @@
 		if ('speechSynthesis' in window) {
 			// Speech Synthesis supported 🎉
 			var msg = new SpeechSynthesisUtterance();
-            msg.text = name;
-            if (isFirstClick()) {
-                msg.text = name[0]
-                nameClickCount +=1
-            }
+			msg.text = name;
+			if (isFirstClick()) {
+				msg.text = name[0];
+				nameClickCount += 1;
+			}
 			window.speechSynthesis.speak(msg);
 		} else {
 			// Speech Synthesis Not Supported 😣
 			alert("Sorry, your browser doesn't support text to speech!");
 		}
 
-        function isFirstClick() {
-            return nameClickCount === 0 ? true : false
-        }
-
+		function isFirstClick() {
+			return nameClickCount === 0 ? true : false;
+		}
 	}
 
-    
-
-    // Make a new set of api calls when idSet changes
+	// Make a new set of api calls when idSet changes
 	let promise: Promise<Array<number>>;
 	$: promise = fetchPokemonSet(idSet);
 
@@ -100,29 +99,27 @@
 			throw new Error(pokemon);
 		}
 	}
-	
 </script>
 
 <section class="quiz-container">
 	<h1>Test your knowledge, Pokemon Trainer!</h1>
-	<h1>Which pokemon is named :</h1>
+	<h3>Which pokemon is named :</h3>
 	{#await promise}
 		<Spinner />
 	{:then pokemonArray}
 		<div class="question-container">
-			<button on:click={() => handleNameClick(pokemonArray[answer].name)}
+			<button class="name" on:click={() => handleNameClick(pokemonArray[answer].name)}
 				>{pokemonArray[answer].name}</button
 			>
 			<div class="pokemon-container">
 				{#each pokemonArray as pokemon, index}
-					<button id={index} on:click={() => handleChoice(index)}>
-						<img src={pokemon.sprites.front_default} />
-					</button>
+					{#if index === answer}
+                         <RightChoice src={pokemon.sprites.front_default} handleChoice={createNewQuestion} name={pokemon.name}/>
+                    {:else}
+                         <WrongChoice src={pokemon.sprites.front_default} handleChoice={createNewQuestion} />
+                    {/if}
 				{/each}
 			</div>
-			{#if result}
-				<Checkmark />
-			{/if}
 		</div>
 	{:catch error}
 		<p>Uh oh, something went wrong</p>
@@ -131,14 +128,18 @@
 
 <style>
 	img {
-		width: 200px;
+		width: 120px;
 	}
 
 	button {
+		position: relative;
 		text-transform: capitalize;
 		font-size: 3rem;
-		padding: 1rem;
-		margin: 1rem;
+		margin: 0.5rem;
+	}
+
+	.name {
+		padding: 0.5rem 1rem;
 	}
 
 	.quiz-container {
@@ -146,6 +147,11 @@
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
+		text-align: center;
+	}
+
+	.quiz-container > h3 {
+		margin-top: 0;
 	}
 
 	.question-container {
@@ -157,8 +163,30 @@
 
 	.pokemon-container {
 		display: flex;
+		flex-direction: column;
 		justify-content: center;
 		align-items: center;
 	}
 
+	.checkmark {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+	}
+
+	@media (min-width: 400px) {
+		.pokemon-container {
+			flex-direction: row;
+		}
+
+		button {
+			padding: 2rem;
+			margin: 2rem;
+		}
+
+		.name {
+			padding: 1rem 2rem;
+		}
+	}
 </style>
