@@ -8,6 +8,7 @@
     let idSet: Array<number> = [];
 	let answer: number;
 	let result: Boolean;
+    let nameClickCount: number;
 
 	onMount(() => {
 		createNewQuestion();
@@ -17,6 +18,7 @@
 		idSet = createSet(QUIZ_SET_SIZE);
 		answer = pickAnswer(QUIZ_SET_SIZE);
 		result = false;
+        nameClickCount = 0;
 	}
 
 	function createSet(size: Number) {
@@ -55,13 +57,24 @@
 		if ('speechSynthesis' in window) {
 			// Speech Synthesis supported 🎉
 			var msg = new SpeechSynthesisUtterance();
-			msg.text = name;
+            msg.text = name;
+            if (isFirstClick()) {
+                msg.text = name[0]
+                nameClickCount +=1
+            }
 			window.speechSynthesis.speak(msg);
 		} else {
 			// Speech Synthesis Not Supported 😣
 			alert("Sorry, your browser doesn't support text to speech!");
 		}
+
+        function isFirstClick() {
+            return nameClickCount === 0 ? true : false
+        }
+
 	}
+
+    
 
     // Make a new set of api calls when idSet changes
 	let promise: Promise<Array<number>>;
