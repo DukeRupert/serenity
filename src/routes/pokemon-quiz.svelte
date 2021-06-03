@@ -1,14 +1,11 @@
 <script lang="typescript">
 	import { onMount } from 'svelte/internal';
-	import { NEW_QUESTION_DELAY, POKEMON_ID_RANGE, QUIZ_SET_SIZE } from '$lib/constants';
-	import WrongChoice from '$lib/Components/WrongChoice.svelte';
-	import RightChoice from '$lib/Components/RightChoice.svelte';
+	import { POKEMON_ID_RANGE, QUIZ_SET_SIZE } from '$lib/constants';
+	import Quiz from '../lib/Components/Quiz.svelte';
 	import Spinner from '$lib/Elements/Spinner.svelte';
 
 	let idSet: Array<number> = [];
 	let answer: number;
-	let result: Boolean;
-	let nameClickCount: number;
 
 	onMount(() => {
 		createNewQuestion();
@@ -17,8 +14,6 @@
 	function createNewQuestion() {
 		idSet = createSet(QUIZ_SET_SIZE);
 		answer = pickAnswer(QUIZ_SET_SIZE);
-		result = false;
-		nameClickCount = 0;
 	}
 
 	function createSet(size: Number) {
@@ -40,30 +35,6 @@
 
 	function pickAnswer(size: number) {
 		return Math.floor(Math.random() * size);
-	}
-
-	function isCorrect(id: number, answer: number) {
-		return id === answer ? true : false;
-	}
-
-	function handleNameClick(name: string) {
-		if ('speechSynthesis' in window) {
-			// Speech Synthesis supported 🎉
-			var msg = new SpeechSynthesisUtterance();
-			msg.text = name;
-			if (isFirstClick()) {
-				msg.text = name[0];
-				nameClickCount += 1;
-			}
-			window.speechSynthesis.speak(msg);
-		} else {
-			// Speech Synthesis Not Supported 😣
-			alert("Sorry, your browser doesn't support text to speech!");
-		}
-
-		function isFirstClick() {
-			return nameClickCount === 0 ? true : false;
-		}
 	}
 
 	// Make a new set of api calls when idSet changes
@@ -98,37 +69,13 @@
 	{#await promise}
 		<Spinner />
 	{:then pokemonArray}
-		<div class="question-container">
-			<button on:click={() => handleNameClick(pokemonArray[answer].name)}
-				>{pokemonArray[answer].name}</button
-			>
-			<div class="pokemon-container">
-				{#each pokemonArray as pokemon, index}
-					{#if isCorrect(index, answer)}
-						<RightChoice
-							src={pokemon.sprites.front_default}
-							handleChoice={createNewQuestion}
-							name={pokemon.name}
-						/>
-					{:else}
-						<WrongChoice src={pokemon.sprites.front_default} handleChoice={createNewQuestion} />
-					{/if}
-				{/each}
-			</div>
-		</div>
+		<Quiz {pokemonArray} {answer} handleChoice={createNewQuestion} />
 	{:catch error}
 		<p>Uh oh, something went wrong</p>
 	{/await}
 </section>
 
 <style>
-	button {
-		position: relative;
-		text-transform: capitalize;
-		font-size: 3rem;
-		margin: 0.5rem;
-		padding: 0.5rem 1rem;
-	}
 	.quiz-container {
 		display: flex;
 		flex-direction: column;
@@ -139,30 +86,5 @@
 
 	.quiz-container > h3 {
 		margin-top: 0;
-	}
-
-	.question-container {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-	}
-
-	.pokemon-container {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-	}
-
-	@media (min-width: 400px) {
-		.pokemon-container {
-			flex-direction: row;
-		}
-
-		button {
-			padding: 1rem 2rem;
-			margin: 2rem;
-		}
 	}
 </style>
