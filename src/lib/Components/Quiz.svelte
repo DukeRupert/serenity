@@ -1,4 +1,4 @@
-<script lang="typescript">
+<script lang="ts">
 	import Question from './Question.svelte';
 	import WrongChoice from '$lib/Components/WrongChoice.svelte';
 	import RightChoice from '$lib/Components/RightChoice.svelte';
@@ -10,12 +10,11 @@
 	function isCorrect(id: number, answer: number) {
 		return id === answer ? true : false;
 	}
-
 </script>
 
-<div class="question-container">
+<div class="flex flex-col justify-center items-center">
 	<Question name={pokemonArray[answer].name} />
-	<div class="pokemon-container">
+	<div class="flex flex-col sm:flex-row justify-center items-center">
 		{#each pokemonArray as pokemon, index}
 			{#if isCorrect(index, answer)}
 				<RightChoice src={pokemon.sprites.front_default} {handleChoice} name={pokemon.name} />
@@ -25,25 +24,3 @@
 		{/each}
 	</div>
 </div>
-
-<style>
-	.question-container {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-	}
-
-	.pokemon-container {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-	}
-
-	@media (min-width: 800px) {
-		.pokemon-container {
-			flex-direction: row;
-		}
-	}
-</style>

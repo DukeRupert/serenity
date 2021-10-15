@@ -63,28 +63,17 @@
 	}
 </script>
 
-<section class="quiz-container">
-	<h1>Test your knowledge, Pokemon Trainer!</h1>
-	<h3>Which pokemon is named :</h3>
-	{#await promise}
-		<Spinner />
-	{:then pokemonArray}
-		<Quiz {pokemonArray} {answer} handleChoice={createNewQuestion} />
-	{:catch error}
-		<p>Uh oh, something went wrong</p>
-	{/await}
+<section class="w-full py-4 px-4 text-center">
+	<h1 class="text-2xl">Test your knowledge, Pokemon Trainer!</h1>
+	<h3 class="text-xl">Which pokemon is named :</h3>
+	<div class="w-full min-h-280 flex justify-center items-center">
+		{#await promise}
+			<Spinner />
+		{:then pokemonArray}
+			<Quiz {pokemonArray} {answer} handleChoice={createNewQuestion} />
+		{:catch error}
+			<p>Uh oh, something went wrong</p>
+			<a href="/">Please return to the home page</a>
+		{/await}
+	</div>
 </section>
-
-<style>
-	.quiz-container {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		text-align: center;
-	}
-
-	.quiz-container > h3 {
-		margin-top: 0;
-	}
-</style>

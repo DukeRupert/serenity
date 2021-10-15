@@ -12,36 +12,19 @@
 	}
 </script>
 
-<button on:click={handleClick} class={clicked ? "shake" : ""}>
-	<img {src} alt={name}/>
+<button
+	on:click={handleClick}
+	class="relative lg:w-50 lg:h-50 w-35 h-35 flex justify-center items-center capitalize text-5xl m-2 lg:p-8 {clicked
+		? 'shake'
+		: ''}"
+>
+	<img {src} alt={name} class="w-30" />
 </button>
 
 <style>
-	img {
-		width: 120px;
-	}
-
-	button {
-		position: relative;
-		width: 200px;
-		height: 200px;
-		text-transform: capitalize;
-		font-size: 3rem;
-		margin: 0.5rem;
-		transform: translate3d(0, 0, 0);
-	}
-
 	.shake {
 		animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 	}
-
-	@media (min-width: 800px) {
-		button {
-			padding: 2rem;
-			margin: 2rem;
-		}
-	}
-
 	@keyframes shake {
 		10%,
 		90% {

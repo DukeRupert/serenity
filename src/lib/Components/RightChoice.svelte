@@ -13,40 +13,14 @@
 	}
 </script>
 
-<button on:click={handleClick}>
-	<img {src} alt={name}/>
+<button
+	on:click={handleClick}
+	class="relative lg:w-50 lg:h-50 w-35 h-35 flex justify-center items-center capitalize text-5xl m-2 lg:p-8"
+>
+	<img {src} alt={name} class="w-30" />
 	{#if clicked}
-		<div class="checkmark">
+		<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
 			<Checkmark />
 		</div>
 	{/if}
 </button>
-
-<style>
-	img {
-		width: 120px;
-	}
-
-	button {
-		position: relative;
-		width: 200px;
-		height: 200px;
-		text-transform: capitalize;
-		font-size: 3rem;
-		margin: 0.5rem;
-	}
-
-	.checkmark {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-	}
-
-	@media (min-width: 800px) {
-		button {
-			padding: 2rem;
-			margin: 2rem;
-		}
-	}
-</style>
