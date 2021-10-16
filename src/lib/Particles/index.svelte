@@ -16,7 +16,7 @@ import { onMount } from "svelte";
 
   let onParticlesLoaded = (event) => {
     const particlesContainer = event.detail.particles;
-
+    console.log('Particles loaded')
     // you can use particlesContainer to call all the Container class
     // (from the core library) methods like play, pause, refresh, start, stop
   };
