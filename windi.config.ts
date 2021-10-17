@@ -19,7 +19,8 @@ export default defineConfig({
 				red: colors.rose,
 				pink: colors.fuchsia,
 				night: '#020411',
-				firefly: '#d47736'
+				fireflyYellow: '#d47736',
+				fireflyBlue: '#497cbf'
 			},
 			fontFamily: {
 				sans: ['Graphik', 'sans-serif'],
@@ -35,6 +36,16 @@ export default defineConfig({
 		}
 	},
 	plugins: [
+		require('@windicss/plugin-animations')({
+			settings: {
+				animatedSpeed: 1000,
+				heartBeatSpeed: 1000,
+				hingeSpeed: 2000,
+				bounceInSpeed: 750,
+				bounceOutSpeed: 750,
+				animationDelaySpeed: 1000
+			}
+		}),
 		plugin(({ addUtilities }) => {
 			const newUtilities = {
 				'.skew-10deg': {

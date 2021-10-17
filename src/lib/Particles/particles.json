@@ -48,7 +48,7 @@
   },
   "particles": {
     "color": {
-      "value": "#d47736",
+      "value": "#F2D544",
       "animation": {
         "l": {
           "enable": true
@@ -85,7 +85,7 @@
       "density": {
         "enable": true
       },
-      "value": 80
+      "value": 20
     },
     "opacity": {
       "random": {
