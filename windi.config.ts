@@ -20,7 +20,7 @@ export default defineConfig({
 				pink: colors.fuchsia,
 				night: '#020411',
 				fireflyYellow: '#d47736',
-				fireflyBlue: '#497cbf'
+				fireflyBlue: '#008ffe'
 			},
 			fontFamily: {
 				sans: ['Graphik', 'sans-serif'],
