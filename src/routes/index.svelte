@@ -6,17 +6,20 @@
 	import { MailIcon, GithubIcon, GlobeIcon } from 'svelte-feather-icons';
 </script>
 
+<svelte:head>
+	<title>Logan Williams - Web Developer</title>
+	<meta name="description" content="I'm a freelance web developer whose passion is helping small businesses succeed." />
+</svelte:head>
+
 <div class="w-full max-w-240 lg:max-w-360 px-4 m-auto box-border">
 	<div class="flex flex-row flex-wrap -md:flex-col -mx-4">
 		<div class="relative flex-1 min-w-60 px-4 text-yellow-100">
 			<h1 class="text-xl lg:text-3xl leading-relaxed mb-6">Hey There!</h1>
 			<p class="lg:text-xl leading-relaxed mb-6">
 				My name is <span class="font-bold text-fireflyBlue">Logan Williams</span>. I’m a freelance
-				Web Developer. Check out some of my
-				<span><a href="/" class="text-fireflyBlue">work</a></span>
-				or if you are interested in what tech i'm using check out the
-				<span><a href="/" class="text-fireflyBlue">stack</a></span> page. Most of my code can be found
-				on GitHub, including the code for this website.
+				Web Developer whose passion is helping small businesses succeed. Check out some of my past work
+				<span><a href="/" class="text-fireflyBlue">here</a></span>. Most of my code can be found on
+				GitHub, including the code for this website.
 			</p>
 			<ul class="lg:text-xl">
 				<li class="animated animate-slide-in-left animate-delay-75">
@@ -55,9 +58,6 @@
 </div>
 
 <style>
-	a {
-	}
-
 	#laptop {
 		animation-name: slidein;
 		animation-delay: 1s;
