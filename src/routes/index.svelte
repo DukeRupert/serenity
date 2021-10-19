@@ -18,7 +18,7 @@
 			<p class="lg:text-xl leading-relaxed mb-6">
 				My name is <span class="font-bold text-fireflyBlue">Logan Williams</span>. I’m a freelance
 				Web Developer whose passion is helping small businesses succeed. Check out some of my past work
-				<span><a href="/" class="text-fireflyBlue">here</a></span>. Most of my code can be found on
+				<span><a href="/projects" class="text-fireflyBlue">here</a></span>. Most of my code can be found on
 				GitHub, including the code for this website.
 			</p>
 			<ul class="lg:text-xl">
