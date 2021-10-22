@@ -1,5 +1,8 @@
 <script context="module" lang="ts">
+	import { browser, dev } from '$app/env';
 	export const prerender = true;
+	export const hydrate = dev;
+	export const router = browser;
 </script>
 
 <script lang="ts">
@@ -11,7 +14,7 @@
 	<meta name="description" content="I'm a freelance web developer whose passion is helping small businesses succeed." />
 </svelte:head>
 
-<div class="w-full max-w-240 lg:max-w-360 px-4 m-auto box-border">
+<div class="w-full max-w-240 lg:max-w-360 px-4 lg:m-auto box-border">
 	<div class="flex flex-row flex-wrap -md:flex-col -mx-4">
 		<div class="relative flex-1 min-w-60 px-4 text-yellow-100">
 			<h1 class="text-xl lg:text-3xl leading-relaxed mb-6">Hey There!</h1>
@@ -24,17 +27,17 @@
 			<ul class="lg:text-xl">
 				<li class="animated animate-slide-in-left animate-delay-75">
 					<a href="mailto:logan@firefly.llc"
-						><MailIcon size="1.25x" class="inline-block mr-2" /> logan@firefly.llc</a
+						><MailIcon size="1.5x" class="inline-block mr-2" /> logan@firefly.llc</a
 					>
 				</li>
 				<li class="animated animate-slide-in-left animate-delay-150">
 					<a href="https://github.com/logan-firefly"
-						><GithubIcon size="1.25x" class="inline-block mr-2" /> Github
+						><GithubIcon size="1.5x" class="inline-block mr-2" /> Github
 					</a>
 				</li>
 				<li class="animated animate-slide-in-left animate-delay-225">
-					<a href="https://www.firefly.llc/"
-						><GlobeIcon size="1.25x" class="inline-block mr-2" /> Firefly Software Engineering
+					<a href="https://www.firefly.llc/" class="text-fireflyBlue"
+						><img src="logo-blue.svg" class="stroke-fireflyBlue w-6 h-6 md:w-7.5 md:h-7.5 inline-block mr-2" /> Firefly Software Engineering
 					</a>
 				</li>
 			</ul>
