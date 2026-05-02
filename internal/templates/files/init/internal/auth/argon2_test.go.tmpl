@@ -1,0 +1,24 @@
+package auth
+
+import "testing"
+
+func TestHashAndVerifyRoundtrip(t *testing.T) {
+	hash, err := HashPassword("correct horse battery staple")
+	if err != nil {
+		t.Fatalf("HashPassword: %v", err)
+	}
+	ok, err := VerifyPassword("correct horse battery staple", hash)
+	if err != nil {
+		t.Fatalf("VerifyPassword: %v", err)
+	}
+	if !ok {
+		t.Fatal("expected verify to succeed for the same password")
+	}
+	bad, err := VerifyPassword("Tr0ub4dor&3", hash)
+	if err != nil {
+		t.Fatalf("VerifyPassword (wrong): %v", err)
+	}
+	if bad {
+		t.Fatal("expected verify to fail for a different password")
+	}
+}

@@ -1,0 +1,17 @@
+// Package jobs is the project's queue-agnostic background-jobs surface.
+// Job code targets the Queue interface so the underlying implementation
+// (goqite for SQLite, River for Postgres) can be swapped via the wiring
+// in cmd/server/main.go without touching individual jobs.
+package jobs
+
+import "context"
+
+// Queue is the minimum surface every backend must satisfy. Higher-level
+// helpers (typed enqueue functions, worker registration) are added by
+// `serenity make:job` as you generate jobs into the project.
+type Queue interface {
+	// Enqueue submits a job for asynchronous processing. The kind names a
+	// worker registered against this queue; payload is opaque bytes the
+	// worker decodes.
+	Enqueue(ctx context.Context, kind string, payload []byte) error
+}

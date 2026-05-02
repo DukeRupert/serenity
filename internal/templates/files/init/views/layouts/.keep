@@ -1,0 +1,2 @@
+templ layouts live here. `serenity make:page` and `serenity make:resource`
+generate views into this tree.

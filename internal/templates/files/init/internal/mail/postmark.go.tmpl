@@ -1,0 +1,85 @@
+package mail
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"time"
+)
+
+// Postmark posts to the Postmark transactional email API directly. We avoid
+// pulling in a Postmark client library — the surface is one endpoint and
+// staying dependency-light keeps the build trivial.
+type Postmark struct {
+	ServerToken string
+	From        string
+	HTTPClient  *http.Client
+}
+
+// NewPostmark returns a Postmark mailer. token is the "Server API Token"
+// from the Postmark dashboard; from is the verified sender address.
+func NewPostmark(token, from string) *Postmark {
+	return &Postmark{
+		ServerToken: token,
+		From:        from,
+		HTTPClient:  &http.Client{Timeout: 10 * time.Second},
+	}
+}
+
+type postmarkRequest struct {
+	From          string `json:"From"`
+	To            string `json:"To"`
+	Subject       string `json:"Subject"`
+	HTMLBody      string `json:"HtmlBody,omitempty"`
+	TextBody      string `json:"TextBody,omitempty"`
+	MessageStream string `json:"MessageStream,omitempty"`
+}
+
+type postmarkError struct {
+	ErrorCode int    `json:"ErrorCode"`
+	Message   string `json:"Message"`
+}
+
+func (p *Postmark) Send(ctx context.Context, msg Message) error {
+	from := msg.From
+	if from == "" {
+		from = p.From
+	}
+	body, err := json.Marshal(postmarkRequest{
+		From:          from,
+		To:            msg.To,
+		Subject:       msg.Subject,
+		HTMLBody:      msg.HTMLBody,
+		TextBody:      msg.TextBody,
+		MessageStream: "outbound",
+	})
+	if err != nil {
+		return fmt.Errorf("encode postmark payload: %w", err)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.postmarkapp.com/email", bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("build postmark request: %w", err)
+	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Postmark-Server-Token", p.ServerToken)
+
+	resp, err := p.HTTPClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("postmark request failed: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode/100 == 2 {
+		return nil
+	}
+	raw, _ := io.ReadAll(resp.Body)
+	var perr postmarkError
+	_ = json.Unmarshal(raw, &perr)
+	if perr.Message != "" {
+		return fmt.Errorf("postmark %d: %s (code %d)", resp.StatusCode, perr.Message, perr.ErrorCode)
+	}
+	return fmt.Errorf("postmark %d: %s", resp.StatusCode, string(raw))
+}

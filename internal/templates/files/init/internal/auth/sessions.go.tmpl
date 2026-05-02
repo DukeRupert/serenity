@@ -1,0 +1,108 @@
+package auth
+
+import (
+	"context"
+	"crypto/rand"
+	"database/sql"
+	"encoding/base64"
+	"fmt"
+	"net/http"
+	"os"
+	"time"
+)
+
+// SessionDuration is the default lifetime of a fresh session. Adjust the
+// constant rather than duplicating it at call sites.
+const SessionDuration = 30 * 24 * time.Hour
+
+// CookieName returns the configured session cookie name, falling back to a
+// project-derived default if unset. Reading from env at call time (instead
+// of init) keeps tests free to override per-test.
+func CookieName() string {
+	if v := os.Getenv("SESSION_COOKIE_NAME"); v != "" {
+		return v
+	}
+	return "session"
+}
+
+// CookieSecure mirrors SESSION_COOKIE_SECURE. Default false so local HTTP
+// development works; production deploys set it via env.
+func CookieSecure() bool {
+	return os.Getenv("SESSION_COOKIE_SECURE") == "true"
+}
+
+// Session is the in-memory representation of a row in the sessions table.
+type Session struct {
+	ID        string
+	UserID    int64
+	ExpiresAt time.Time
+}
+
+// CreateSession inserts a fresh session for the given user and returns it.
+// The id is a 32-byte URL-safe random token.
+func CreateSession(ctx context.Context, db *sql.DB, userID int64) (Session, error) {
+	id, err := newSessionID()
+	if err != nil {
+		return Session{}, err
+	}
+	expires := time.Now().Add(SessionDuration)
+	if _, err := db.ExecContext(ctx,
+		`INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)`,
+		id, userID, expires,
+	); err != nil {
+		return Session{}, fmt.Errorf("insert session: %w", err)
+	}
+	return Session{ID: id, UserID: userID, ExpiresAt: expires}, nil
+}
+
+// LookupSession returns the session row, or sql.ErrNoRows if missing/expired.
+// Expired sessions are treated as absent and not returned to the caller.
+func LookupSession(ctx context.Context, db *sql.DB, id string) (Session, error) {
+	var s Session
+	err := db.QueryRowContext(ctx,
+		`SELECT id, user_id, expires_at FROM sessions WHERE id = ? AND expires_at > CURRENT_TIMESTAMP`,
+		id,
+	).Scan(&s.ID, &s.UserID, &s.ExpiresAt)
+	return s, err
+}
+
+// DeleteSession removes a session by id. Idempotent.
+func DeleteSession(ctx context.Context, db *sql.DB, id string) error {
+	_, err := db.ExecContext(ctx, `DELETE FROM sessions WHERE id = ?`, id)
+	return err
+}
+
+// SetSessionCookie writes the session cookie on the response.
+func SetSessionCookie(w http.ResponseWriter, s Session) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     CookieName(),
+		Value:    s.ID,
+		Path:     "/",
+		Expires:  s.ExpiresAt,
+		HttpOnly: true,
+		Secure:   CookieSecure(),
+		SameSite: http.SameSiteLaxMode,
+	})
+}
+
+// ClearSessionCookie writes an expired cookie to log a user out.
+func ClearSessionCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     CookieName(),
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   CookieSecure(),
+		SameSite: http.SameSiteLaxMode,
+	})
+}
+
+func newSessionID() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", fmt.Errorf("read random: %w", err)
+	}
+	return base64.RawURLEncoding.EncodeToString(b), nil
+}

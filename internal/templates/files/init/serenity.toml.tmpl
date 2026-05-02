@@ -1,0 +1,13 @@
+serenity_version = "{{.SerenityVersion}}"
+module = "{{.Module}}"
+
+[stack]
+type = "{{.Stack.Type}}"
+database = "{{.Stack.Database}}"
+auth = {{.Stack.Auth}}
+jobs = {{.Stack.Jobs}}
+mailer = "{{.Stack.Mailer}}"
+sentry = {{.Stack.Sentry}}
+
+[stack.ui]
+layer = "{{.Stack.UI.Layer}}"

@@ -1,0 +1,2 @@
+Tailwind / custom CSS source. The build pipeline (added by a future generator)
+compiles this into assets/css/dist/, which is embedded into the binary.

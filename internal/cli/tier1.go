@@ -5,13 +5,8 @@ import "github.com/spf13/cobra"
 // Tier 1 — used weekly. The four commands here are the highest-leverage
 // surface and the first targets of the build order in framework-plan.md.
 func registerTier1(root *cobra.Command) {
+	root.AddCommand(newInitCmd())
 	registerStubs(root, []stub{
-		{
-			use:       "init",
-			args:      "<project>",
-			short:     "Bootstrap a new Go web project with the full stack pre-wired",
-			milestone: "Milestone 1",
-		},
 		{
 			use:       "make:resource",
 			args:      "<Name>",

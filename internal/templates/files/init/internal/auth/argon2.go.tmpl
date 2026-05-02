@@ -1,0 +1,22 @@
+// Package auth holds the authentication primitives Serenity ships with every
+// project: argon2id password hashing, cookie-backed sessions, and the
+// RequireAuth / OptionalAuth middleware. Login / register / reset / verify
+// handlers and views are added separately by `serenity make:auth`.
+package auth
+
+import "github.com/alexedwards/argon2id"
+
+// HashParams are the project-wide argon2id parameters. The values mirror
+// argon2id.DefaultParams as of the version pinned by go.mod; pulling them
+// into a named variable here makes the choice explicit and reviewable.
+var HashParams = argon2id.DefaultParams
+
+// HashPassword returns an encoded argon2id hash suitable for storage.
+func HashPassword(plain string) (string, error) {
+	return argon2id.CreateHash(plain, HashParams)
+}
+
+// VerifyPassword reports whether plain matches the encoded hash.
+func VerifyPassword(plain, encoded string) (bool, error) {
+	return argon2id.ComparePasswordAndHash(plain, encoded)
+}

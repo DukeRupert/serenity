@@ -1,0 +1,14 @@
+package mail
+
+import "os"
+
+// FromEnv returns the appropriate Mailer for the current environment. If
+// POSTMARK_SERVER_TOKEN is set, the live Postmark client is used; otherwise
+// the in-memory recorder is returned, which lets `go run ./cmd/server` work
+// on a freshly cloned project without secrets configured.
+func FromEnv() Mailer {
+	if token := os.Getenv("POSTMARK_SERVER_TOKEN"); token != "" {
+		return NewPostmark(token, os.Getenv("POSTMARK_FROM_EMAIL"))
+	}
+	return NewRecorder()
+}

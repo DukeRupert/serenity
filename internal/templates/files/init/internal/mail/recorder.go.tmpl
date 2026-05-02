@@ -1,0 +1,33 @@
+package mail
+
+import (
+	"context"
+	"sync"
+)
+
+// Recorder is an in-memory Mailer used for tests and for local dev when no
+// real provider is configured. Sent messages are appended to an internal
+// slice that tests can inspect.
+type Recorder struct {
+	mu       sync.Mutex
+	messages []Message
+}
+
+// NewRecorder returns an empty Recorder.
+func NewRecorder() *Recorder { return &Recorder{} }
+
+func (r *Recorder) Send(_ context.Context, msg Message) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.messages = append(r.messages, msg)
+	return nil
+}
+
+// Messages returns a copy of every message Send has received so far.
+func (r *Recorder) Messages() []Message {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	out := make([]Message, len(r.messages))
+	copy(out, r.messages)
+	return out
+}

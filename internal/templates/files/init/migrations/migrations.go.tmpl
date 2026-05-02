@@ -1,0 +1,27 @@
+// Package migrations embeds the goose migration files and exposes a single
+// Run function used by cmd/server at startup. Migrations are part of the
+// deployed binary, so production hosts never need a separate goose CLI.
+package migrations
+
+import (
+	"database/sql"
+	"embed"
+	"fmt"
+
+	"github.com/pressly/goose/v3"
+)
+
+//go:embed *.sql
+var FS embed.FS
+
+// Run applies any pending migrations against db. Safe to call repeatedly.
+func Run(db *sql.DB) error {
+	goose.SetBaseFS(FS)
+	if err := goose.SetDialect("sqlite"); err != nil {
+		return fmt.Errorf("set goose dialect: %w", err)
+	}
+	if err := goose.Up(db, "."); err != nil {
+		return fmt.Errorf("goose up: %w", err)
+	}
+	return nil
+}

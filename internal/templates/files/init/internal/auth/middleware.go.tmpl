@@ -1,0 +1,63 @@
+package auth
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"net/http"
+)
+
+// ctxKey is the unexported type used for context keys to avoid collisions.
+type ctxKey struct{ name string }
+
+var sessionCtxKey = ctxKey{"session"}
+
+// RequireAuth blocks unauthenticated requests with a 302 to /login. The
+// request is only allowed through if a valid session cookie resolves to
+// a non-expired sessions row.
+func RequireAuth(db *sql.DB, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		s, ok := lookupFromCookie(r.Context(), db, r)
+		if !ok {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), sessionCtxKey, s)))
+	})
+}
+
+// OptionalAuth attaches the session to the request context when present, but
+// lets unauthenticated requests through unchanged. Use it on routes that
+// behave differently for logged-in users (e.g. nav rendering).
+func OptionalAuth(db *sql.DB, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if s, ok := lookupFromCookie(r.Context(), db, r); ok {
+			r = r.WithContext(context.WithValue(r.Context(), sessionCtxKey, s))
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+// SessionFrom extracts the session attached by RequireAuth/OptionalAuth.
+func SessionFrom(ctx context.Context) (Session, bool) {
+	s, ok := ctx.Value(sessionCtxKey).(Session)
+	return s, ok
+}
+
+func lookupFromCookie(ctx context.Context, db *sql.DB, r *http.Request) (Session, bool) {
+	c, err := r.Cookie(CookieName())
+	if err != nil || c.Value == "" {
+		return Session{}, false
+	}
+	s, err := LookupSession(ctx, db, c.Value)
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			// Log path is intentionally absent here — the caller's request
+			// logging middleware will record the upstream status. We treat
+			// any DB error as "no session" so a transient outage degrades
+			// to "logged out" rather than "500".
+		}
+		return Session{}, false
+	}
+	return s, true
+}

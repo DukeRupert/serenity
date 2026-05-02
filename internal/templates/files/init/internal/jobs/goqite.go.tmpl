@@ -1,0 +1,38 @@
+package jobs
+
+import (
+	"context"
+	"database/sql"
+	"time"
+
+	"maragu.dev/goqite"
+)
+
+// goqiteQueue adapts a goqite queue to the project's Queue interface. A
+// single goqite table multiplexes by `kind` — the worker dispatcher reads
+// the kind off the message body and routes accordingly. The framing format
+// is `<kind>\n<payload>` to keep zero-dependency decoding trivial.
+type goqiteQueue struct {
+	q *goqite.Queue
+}
+
+// NewGoqite attaches a queue handle to the supplied SQLite database. The
+// `goqite` table itself is created by migration 0003 — this constructor
+// does not run any DDL.
+func NewGoqite(db *sql.DB) Queue {
+	q := goqite.New(goqite.NewOpts{
+		DB:         db,
+		Name:       "default",
+		MaxReceive: 3,
+		Timeout:    30 * time.Second,
+	})
+	return &goqiteQueue{q: q}
+}
+
+func (g *goqiteQueue) Enqueue(ctx context.Context, kind string, payload []byte) error {
+	body := make([]byte, 0, len(kind)+1+len(payload))
+	body = append(body, kind...)
+	body = append(body, '\n')
+	body = append(body, payload...)
+	return g.q.Send(ctx, goqite.Message{Body: body})
+}

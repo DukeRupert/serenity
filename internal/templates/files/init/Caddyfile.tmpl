@@ -1,0 +1,23 @@
+{
+	# Local development defaults. Production overrides via the deployed
+	# Caddyfile under /etc/caddy on the Hetzner host.
+	auto_https off
+}
+
+:8080 {
+	encode zstd gzip
+
+	# Static assets are served by the app binary itself (embed.FS).
+	reverse_proxy localhost:3000
+
+	log {
+		output stdout
+		format json
+	}
+}
+
+# Production block — uncomment and adjust on the deploy host.
+# {{.ProjectName}}.example.com {
+# 	encode zstd gzip
+# 	reverse_proxy localhost:3000
+# }

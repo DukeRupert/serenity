@@ -1,0 +1,23 @@
+# Build output
+/bin/
+/dist/
+
+# Local data
+/data/
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+
+# Environment
+.env
+.env.local
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Generated assets
+/assets/css/dist/
+/node_modules/

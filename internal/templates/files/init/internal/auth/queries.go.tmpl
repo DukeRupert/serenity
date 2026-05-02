@@ -1,0 +1,62 @@
+package auth
+
+import (
+	"context"
+	"database/sql"
+	"time"
+)
+
+// User is the in-memory representation of a row in the users table.
+//
+// These queries are hand-rolled with database/sql because auth is wired up
+// before sqlc has anything to generate (queries/users.sql is shipped as the
+// sqlc input source-of-truth, but the bootstrap queries below are what the
+// session middleware actually uses). After your first `sqlc generate`, you
+// can migrate these calls to the generated `db.Queries` type if you prefer.
+type User struct {
+	ID              int64
+	Email           string
+	PasswordHash    string
+	EmailVerifiedAt sql.NullTime
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
+
+// CreateUser inserts a user with the supplied email + already-hashed
+// password and returns the populated row.
+func CreateUser(ctx context.Context, db *sql.DB, email, passwordHash string) (User, error) {
+	res, err := db.ExecContext(ctx,
+		`INSERT INTO users (email, password_hash) VALUES (?, ?)`,
+		email, passwordHash,
+	)
+	if err != nil {
+		return User{}, err
+	}
+	id, err := res.LastInsertId()
+	if err != nil {
+		return User{}, err
+	}
+	return GetUser(ctx, db, id)
+}
+
+// GetUser fetches a user by id.
+func GetUser(ctx context.Context, db *sql.DB, id int64) (User, error) {
+	var u User
+	err := db.QueryRowContext(ctx,
+		`SELECT id, email, password_hash, email_verified_at, created_at, updated_at FROM users WHERE id = ?`,
+		id,
+	).Scan(&u.ID, &u.Email, &u.PasswordHash, &u.EmailVerifiedAt, &u.CreatedAt, &u.UpdatedAt)
+	return u, err
+}
+
+// GetUserByEmail fetches a user by email address. Returns sql.ErrNoRows if
+// no user exists — callers should not distinguish "no user" from "wrong
+// password" in user-facing error messages.
+func GetUserByEmail(ctx context.Context, db *sql.DB, email string) (User, error) {
+	var u User
+	err := db.QueryRowContext(ctx,
+		`SELECT id, email, password_hash, email_verified_at, created_at, updated_at FROM users WHERE email = ?`,
+		email,
+	).Scan(&u.ID, &u.Email, &u.PasswordHash, &u.EmailVerifiedAt, &u.CreatedAt, &u.UpdatedAt)
+	return u, err
+}

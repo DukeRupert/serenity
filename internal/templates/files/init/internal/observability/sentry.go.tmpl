@@ -1,0 +1,19 @@
+// Package observability owns the project's third-party observability wiring.
+// Currently only Sentry; metrics live in internal/router so the middleware
+// stack can be assembled together.
+package observability
+
+import (
+	"github.com/getsentry/sentry-go"
+)
+
+// InitSentry configures the global Sentry hub. The DSN is the only required
+// argument; release/environment defaults are applied when not provided.
+func InitSentry(dsn, environment string) error {
+	return sentry.Init(sentry.ClientOptions{
+		Dsn:              dsn,
+		Environment:      environment,
+		EnableTracing:    false,
+		AttachStacktrace: true,
+	})
+}

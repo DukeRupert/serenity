@@ -1,0 +1,23 @@
+// Package mail is the project's email surface. Application code talks to
+// the Mailer interface; concrete providers (Postmark, SendGrid, SES, SMTP)
+// implement it. Tests use the in-memory recorder.
+package mail
+
+import "context"
+
+// Message is the minimum cross-provider envelope. Fields beyond these (CC,
+// BCC, attachments, headers) are added per-provider as needed; keep the
+// shared type small so the abstraction stays cheap.
+type Message struct {
+	From     string
+	To       string
+	Subject  string
+	HTMLBody string
+	TextBody string
+}
+
+// Mailer is the surface application code targets. A Send call may queue,
+// transmit, or record — that's the implementation's choice.
+type Mailer interface {
+	Send(ctx context.Context, msg Message) error
+}

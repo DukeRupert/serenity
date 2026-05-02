@@ -1,0 +1,20 @@
+services:
+  {{.ProjectName}}:
+    build: .
+    image: {{.ProjectName}}:local
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      APP_ENV: production
+      ADDR: ":3000"
+      DATABASE_URL: "/data/{{.ProjectName}}.sqlite3"
+      SESSION_COOKIE_SECURE: "true"
+      SENTRY_DSN: ""
+      POSTMARK_SERVER_TOKEN: ""
+      POSTMARK_FROM_EMAIL: ""
+    volumes:
+      - data:/data
+
+volumes:
+  data:

@@ -1,0 +1,4 @@
+Project-local generator template overrides go here. Files under
+.serenity/templates/<generator>/<file>.tmpl take precedence over the
+copies built into the Serenity binary. See the framework plan's
+"Extensibility" section for the resolution order.

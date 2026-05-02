@@ -1,0 +1,41 @@
+// Package router builds the project's HTTP handler. It owns the route table,
+// the middleware stack, and the small set of "infrastructure" routes
+// (`/healthz`, `/metrics`, the placeholder home page). Feature handlers live
+// in their own packages under internal/<feature>/ and are registered here.
+package router
+
+import (
+	"database/sql"
+	"net/http"
+
+	"{{.Module}}/internal/jobs"
+	"{{.Module}}/internal/mail"
+)
+
+// Deps is the wiring bag passed from cmd/server into the router. Keep it
+// intentionally small — only put things here that handlers genuinely need.
+// It is not a service container.
+type Deps struct {
+	DB     *sql.DB
+	Mailer mail.Mailer
+	Queue  jobs.Queue
+}
+
+// New returns the project's HTTP handler with the standard middleware stack
+// applied: panic recovery, structured request logging, Prometheus metrics
+// (route-pattern labels), in that order from outermost to innermost.
+func New(deps Deps) http.Handler {
+	mux := http.NewServeMux()
+	register(mux, deps)
+	var h http.Handler = mux
+	h = MetricsMiddleware(h)
+	h = LoggingMiddleware(h)
+	h = RecoveryMiddleware(h)
+	return h
+}
+
+func register(mux *http.ServeMux, deps Deps) {
+	mux.HandleFunc("GET /{$}", handleHome)
+	mux.HandleFunc("GET /healthz", handleHealthz(deps.DB))
+	mux.Handle("GET /metrics", PrometheusHandler())
+}
